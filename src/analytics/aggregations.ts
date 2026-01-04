@@ -1,5 +1,8 @@
 import type { StatsState } from "../storage/types";
 
+export const RETENTION_DAYS = 90;
+const RETENTION_WINDOW_MS = RETENTION_DAYS * 24 * 60 * 60 * 1000;
+
 function formatHourKey(date: Date): string {
   return date.toISOString().slice(0, 13);
 }
@@ -25,35 +28,55 @@ function parseHourKey(hourKey: string): Date {
   return new Date(`${hourKey}:00:00.000Z`);
 }
 
-function sumForDay(countsByHour: Record<string, number>, dayKey: string): number {
-  let total = 0;
+function pruneCountsByHour(
+  countsByHour: Record<string, number>,
+  timestamp: Date
+): Record<string, number> {
+  const cutoff = new Date(timestamp.getTime() - RETENTION_WINDOW_MS);
+  const pruned: Record<string, number> = {};
   for (const [hourKey, count] of Object.entries(countsByHour)) {
-    if (hourKey.startsWith(dayKey)) {
-      total += count;
+    if (parseHourKey(hourKey) >= cutoff) {
+      pruned[hourKey] = count;
     }
   }
-  return total;
+  return pruned;
 }
 
-function sumForMonth(countsByHour: Record<string, number>, monthKey: string): number {
-  let total = 0;
+function rebuildTotals(countsByHour: Record<string, number>): {
+  dailyTotals: Record<string, number>;
+  weeklyTotals: Record<string, number>;
+  monthlyTotals: Record<string, number>;
+} {
+  const dailyTotals: Record<string, number> = {};
+  const weeklyTotals: Record<string, number> = {};
+  const monthlyTotals: Record<string, number> = {};
+
   for (const [hourKey, count] of Object.entries(countsByHour)) {
-    if (hourKey.startsWith(monthKey)) {
-      total += count;
-    }
+    const timestamp = parseHourKey(hourKey);
+    const dayKey = formatDayKey(timestamp);
+    const weekKey = formatWeekKey(timestamp);
+    const monthKey = formatMonthKey(timestamp);
+
+    dailyTotals[dayKey] = (dailyTotals[dayKey] ?? 0) + count;
+    weeklyTotals[weekKey] = (weeklyTotals[weekKey] ?? 0) + count;
+    monthlyTotals[monthKey] = (monthlyTotals[monthKey] ?? 0) + count;
   }
-  return total;
+
+  return { dailyTotals, weeklyTotals, monthlyTotals };
 }
 
-function sumForWeek(countsByHour: Record<string, number>, weekKey: string): number {
-  let total = 0;
-  for (const [hourKey, count] of Object.entries(countsByHour)) {
-    const week = formatWeekKey(parseHourKey(hourKey));
-    if (week === weekKey) {
-      total += count;
-    }
-  }
-  return total;
+export function pruneStats(stats: StatsState, timestamp: Date): StatsState {
+  const countsByHour = pruneCountsByHour(stats.countsByHour, timestamp);
+  const { dailyTotals, weeklyTotals, monthlyTotals } = rebuildTotals(countsByHour);
+
+  return {
+    ...stats,
+    schemaVersion: 2,
+    countsByHour,
+    dailyTotals,
+    weeklyTotals,
+    monthlyTotals
+  };
 }
 
 export function recordCount(
@@ -62,26 +85,18 @@ export function recordCount(
   timestamp: Date
 ): StatsState {
   const hourKey = formatHourKey(timestamp);
-  const dayKey = formatDayKey(timestamp);
-  const weekKey = formatWeekKey(timestamp);
-  const monthKey = formatMonthKey(timestamp);
-
-  const countsByHour = { ...stats.countsByHour, [hourKey]: count };
+  const countsByHour = pruneCountsByHour(
+    { ...stats.countsByHour, [hourKey]: count },
+    timestamp
+  );
+  const { dailyTotals, weeklyTotals, monthlyTotals } = rebuildTotals(countsByHour);
 
   return {
     ...stats,
+    schemaVersion: 2,
     countsByHour,
-    dailyTotals: {
-      ...stats.dailyTotals,
-      [dayKey]: sumForDay(countsByHour, dayKey)
-    },
-    weeklyTotals: {
-      ...stats.weeklyTotals,
-      [weekKey]: sumForWeek(countsByHour, weekKey)
-    },
-    monthlyTotals: {
-      ...stats.monthlyTotals,
-      [monthKey]: sumForMonth(countsByHour, monthKey)
-    }
+    dailyTotals,
+    weeklyTotals,
+    monthlyTotals
   };
 }
