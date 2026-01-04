@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tab Counter Options</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: \"Segoe UI\", \"Helvetica Neue\", Arial, sans-serif;
+      }
+      body {
+        margin: 0;
+        padding: 24px;
+        background: #f8fafc;
+        color: #0f172a;
+      }
+      h1 {
+        margin: 0 0 16px;
+        font-size: 20px;
+      }
+      form {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 16px;
+        max-width: 420px;
+      }
+      label {
+        display: block;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #475569;
+        margin-bottom: 6px;
+      }
+      input[type=\"number\"] {
+        width: 100%;
+        padding: 8px 10px;
+        border: 1px solid #cbd5f5;
+        border-radius: 8px;
+        font-size: 14px;
+      }
+      .field {
+        margin-bottom: 12px;
+      }
+      .toggle {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+      }
+      button {
+        margin-top: 8px;
+        padding: 8px 14px;
+        background: #175cd3;
+        color: #ffffff;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Tab Counter Options</h1>
+    <form id="settings-form">
+      <div class="field">
+        <label for="badge-medium">Badge medium threshold</label>
+        <input id="badge-medium" type="number" min="1" />
+      </div>
+      <div class="field">
+        <label for="badge-high">Badge high threshold</label>
+        <input id="badge-high" type="number" min="1" />
+      </div>
+      <div class="field toggle">
+        <input id="messages-enabled" type="checkbox" />
+        <label for="messages-enabled">Enable funny messages</label>
+      </div>
+      <button type="submit">Save settings</button>
+    </form>
+    <script type="module" src="./index.ts"></script>
+  </body>
+</html>

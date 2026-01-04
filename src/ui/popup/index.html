@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tab Counter</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: \"Segoe UI\", \"Helvetica Neue\", Arial, sans-serif;
+      }
+      body {
+        margin: 0;
+        padding: 16px;
+        min-width: 240px;
+        background: #f8fafc;
+        color: #0f172a;
+      }
+      h1 {
+        font-size: 16px;
+        margin: 0 0 12px;
+      }
+      .stat {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #e2e8f0;
+      }
+      .stat:last-child {
+        border-bottom: none;
+      }
+      .label {
+        color: #475569;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+      .value {
+        font-weight: 600;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Tab Counter</h1>
+    <div class="stat">
+      <span class="label">Current Tabs</span>
+      <span class="value" id="current-count">--</span>
+    </div>
+    <div class="stat">
+      <span class="label">Today Total</span>
+      <span class="value" id="today-total">--</span>
+    </div>
+    <div class="stat">
+      <span class="label">Week Total</span>
+      <span class="value" id="week-total">--</span>
+    </div>
+    <div class="stat">
+      <span class="label">Month Total</span>
+      <span class="value" id="month-total">--</span>
+    </div>
+    <div class="stat">
+      <span class="label">Latest Message</span>
+      <span class="value" id="last-message">--</span>
+    </div>
+    <script type="module" src="./index.ts"></script>
+  </body>
+</html>
